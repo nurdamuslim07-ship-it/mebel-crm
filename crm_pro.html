@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Мебель CRM Pro</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blur: blur(24px) saturate(180%);
+  --blur-sm: blur(12px) saturate(160%);
+  --bg-base: #0a0a0f;
+  --glass-1: rgba(255,255,255,0.07);
+  --glass-2: rgba(255,255,255,0.12);
+  --glass-3: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.14);
+  --glass-border-2: rgba(255,255,255,0.22);
+  --text: #f5f5f7;
+  --text-2: rgba(245,245,247,0.7);
+  --text-3: rgba(245,245,247,0.4);
+  --accent: #0A84FF;
+  --accent-g: linear-gradient(135deg,#0A84FF,#5E5CE6);
+  --green: #30D158;
+  --orange: #FF9F0A;
+  --red: #FF453A;
+  --purple: #BF5AF2;
+  --yellow: #FFD60A;
+  --teal: #5AC8FA;
+  --mesh: radial-gradient(ellipse at 20% 20%, rgba(94,92,230,0.3) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 80%, rgba(10,132,255,0.25) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(191,90,242,0.15) 0%, transparent 60%);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+html,body{
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: 'Nunito', -apple-system, sans-serif;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--mesh);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* HEADER */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 14px 20px;
+  background: rgba(10,10,15,0.6);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,0.6));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header-left .role-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-weight: 600;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.role-director { background: rgba(255,214,10,0.2); color: var(--yellow); }
+.role-worker   { background: rgba(10,132,255,0.2); color: var(--accent); }
+
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--blur-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:active { transform: scale(0.9); }
+
+/* TABS */
+.tabs-wrap {
+  position: sticky;
+  top: 65px;
+  z-index: 90;
+  background: rgba(10,10,15,0.5);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar{display:none;}
+
+.tab {
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.25s;
+  backdrop-filter: var(--blur-sm);
+}
+
+.tab.active {
+  background: var(--glass-2);
+  border-color: var(--glass-border-2);
+  color: var(--text);
+  box-shadow: 0 0 20px rgba(10,132,255,0.2);
+}
+
+/* STATUS FILTER */
+.status-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.status-tabs::-webkit-scrollbar{display:none;}
+
+.stab {
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid var(--glass-border);
+  color: var(--text-2);
+  background: var(--glass-1);
+  transition: all 0.2s;
+}
+
+.stab.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(10,132,255,0.25);
+}
+
+/* SEARCH */
+.search-wrap {
+  padding: 10px 16px 0;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  backdrop-filter: var(--blur-sm);
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-input::placeholder { color: var(--text-3); }
+
+/* CONTENT */
+.content {
+  padding: 12px 16px 120px;
+  position: relative;
+  z-index: 1;
+}
+
+/* CARDS */
+.order-card {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 10px;
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+.order-card:active {
+  transform: scale(0.98);
+  background: var(--glass-2);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.card-client-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.card-phone {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.b-new      { background: rgba(90,200,250,0.15); color: var(--teal); }
+.b-measure  { background: rgba(255,159,10,0.15); color: var(--orange); }
+.b-design   { background: rgba(191,90,242,0.15); color: var(--purple); }
+.b-prod     { background: rgba(255,159,10,0.2);  color: var(--orange); }
+.b-done     { background: rgba(48,209,88,0.15);  color: var(--green); }
+.b-deliver  { background: rgba(10,132,255,0.15); color: var(--accent); }
+.b-cancel   { background: rgba(255,69,58,0.15);  color: var(--red); }
+.b-kabyl    { background: rgba(90,200,250,0.15); color: var(--teal); }
+
+.card-furniture {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.card-price {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.card-deadline {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.card-deadline.urgent { color: var(--red); }
+
+.card-worker {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+/* STATS */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px 12px;
+  backdrop-filter: var(--blur-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.stat-val {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.stat-val.blue   { color: var(--accent); }
+.stat-val.green  { color: var(--green); }
+.stat-val.orange { color: var(--orange); }
+.stat-val.purple { color: var(--purple); }
+.stat-val.yellow { color: var(--yellow); }
+
+/* FINANCE (director only) */
+.finance-card {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 16px;
+  backdrop-filter: var(--blur-sm);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.finance-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+}
+
+.fin-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.fin-row:last-child { border-bottom: none; }
+
+.fin-label { font-size: 13px; color: var(--text-2); }
+.fin-val { font-size: 16px; font-weight: 700; }
+.fin-val.green { color: var(--green); }
+.fin-val.orange { color: var(--orange); }
+.fin-val.yellow { color: var(--yellow); }
+
+/* STATUS BAR */
+.status-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.status-bar::-webkit-scrollbar{display:none;}
+
+.sbar-item {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sbar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin: 0 auto 4px;
+}
+
+.sbar-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+/* CLIENT CARD */
+.client-card {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 8px;
+  backdrop-filter: var(--blur-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.client-card:active { background: var(--glass-2); }
+
+.client-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.client-info { flex: 1; }
+.client-name { font-size: 15px; font-weight: 700; }
+.client-phone { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+.client-orders-badge {
+  background: rgba(10,132,255,0.2);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* WORKER CARD */
+.worker-card {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 8px;
+  backdrop-filter: var(--blur-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.worker-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-g);
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 300;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: 0 8px 32px rgba(10,132,255,0.5), 0 2px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab:active { transform: scale(0.9); }
+
+/* MODAL */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal.active { display: flex; }
+
+.modal-box {
+  background: rgba(18,18,28,0.9);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px 28px 0 0;
+  width: 100%;
+  max-height: 93vh;
+  overflow-y: auto;
+  padding: 8px 20px calc(32px + env(safe-area-inset-bottom));
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--glass-border-2);
+  border-radius: 2px;
+  margin: 10px auto 18px;
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+}
+
+/* FORM */
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  backdrop-filter: var(--blur-sm);
+  transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(10,132,255,0.15);
+}
+
+.field textarea { resize: vertical; min-height: 70px; }
+
+.field select option { background: #1a1a2e; color: var(--text); }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* BUTTONS */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+
+.btn:active { opacity: 0.75; transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--accent-g);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(10,132,255,0.4);
+}
+
+.btn-glass {
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+}
+
+.btn-green {
+  background: linear-gradient(135deg, #30D158, #34C759);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(48,209,88,0.35);
+}
+
+.btn-red {
+  background: rgba(255,69,58,0.15);
+  border: 1px solid rgba(255,69,58,0.3);
+  color: var(--red);
+}
+
+.btn-purple {
+  background: rgba(191,90,242,0.2);
+  border: 1px solid rgba(191,90,242,0.3);
+  color: var(--purple);
+}
+
+/* DETAIL */
+.detail-block {
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+  backdrop-filter: var(--blur-sm);
+}
+
+.d-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--glass-border);
+  gap: 10px;
+}
+
+.d-row:last-child { border-bottom: none; }
+
+.d-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.d-val {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text);
+}
+
+.d-val.green  { color: var(--green); }
+.d-val.orange { color: var(--orange); }
+.d-val.blue   { color: var(--accent); font-size: 18px; font-weight: 800; }
+
+/* STATUS PICKER */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.s-opt {
+  padding: 12px;
+  background: var(--glass-1);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.s-opt.active {
+  background: rgba(10,132,255,0.25);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* PDF PREVIEW */
+.pdf-preview {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  color: #1a1a1a;
+  margin: 12px 0;
+}
+
+.pdf-logo { font-size: 20px; font-weight: 800; color: #0A84FF; margin-bottom: 16px; }
+.pdf-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #333; }
+.pdf-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 13px; color: #555; }
+.pdf-row:last-child { border-bottom: none; }
+.pdf-total { font-size: 18px; font-weight: 800; color: #0A84FF; margin-top: 10px; }
+
+/* NOTIFICATION TEMPLATE */
+.notif-template {
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 14px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border-2);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 400;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.show { opacity: 1; }
+
+/* LOADING */
+.loading {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-3);
+}
+
+.spin {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--glass-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+
+.empty-icon { font-size: 52px; margin-bottom: 12px; opacity: 0.3; }
+.empty-text { font-size: 17px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+
+/* EDIT BTN */
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(10,132,255,0.15);
+  border: 1px solid rgba(10,132,255,0.3);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* SECTION TITLE */
+.sec-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 20px 0 10px;
+  padding-left: 4px;
+}
+
+/* DIRECTOR LOCK */
+.director-only { display: none; }
+
+/* NOTIFY BADGE */
+.notify-msg {
+  background: rgba(48,209,88,0.1);
+  border: 1px solid rgba(48,209,88,0.25);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.notify-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+/* ACCESS DENIED */
+.access-denied {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.access-icon { font-size: 48px; margin-bottom: 12px; }
+.access-text { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.access-sub  { font-size: 13px; color: var(--text-3); }
+
+/* LOGIN SCREEN */
+.login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--mesh);
+  pointer-events: none;
+}
+
+.login-logo {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+.login-sub {
+  font-size: 14px;
+  color: var(--text-2);
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-field {
+  width: 100%;
+  background: var(--glass-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.login-field:focus { outline: none; border-color: var(--accent); }
+.login-field::placeholder { color: var(--text-3); }
+
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  background: var(--accent-g);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(10,132,255,0.4);
+}
+
+.login-info {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div style="position:relative;z-index:1;width:100%;max-width:360px;text-align:center">
+    <div class="login-logo">🪑</div>
+    <div class="login-title">Мебель CRM Pro</div>
+    <div class="login-sub">Кіру үшін кодыңызды енгізіңіз</div>
+    <input type="text" class="login-field" id="loginCode" placeholder="Кіру коды (мысалы: 1234)" maxlength="20">
+    <button class="login-btn" onclick="doLogin()">Кіру</button>
+    <div class="login-info">Кодты директордан алыңыз</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+<header class="header">
+  <div class="header-left">
+    <h1>🪑 Мебель CRM</h1>
+    <span class="role-badge" id="roleBadge">—</span>
+  </div>
+  <div class="header-right">
+    <div class="icon-btn" id="notifBtn" title="Хабарламалар" style="display:none">🔔</div>
+    <div class="icon-btn" onclick="doLogout()">🚪</div>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="mainTabs">
+    <div class="tab active" data-view="orders">📋 Тапсырыстар</div>
+    <div class="tab" data-view="clients">👥 Клиенттер</div>
+    <div class="tab director-only" data-view="stats">📊 Есеп</div>
+    <div class="tab director-only" data-view="workers">👷 Жұмысшылар</div>
+  </div>
+</div>
+
+<!-- ORDERS VIEW -->
+<div id="view-orders">
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="orderSearch" placeholder="🔍 Іздеу...">
+  </div>
+  <div class="status-tabs" id="statusFilter">
+    <div class="stab active" data-s="all">Барлығы</div>
+    <div class="stab" data-s="Жаңа">Жаңа</div>
+    <div class="stab" data-s="Өлшеу">Өлшеу</div>
+    <div class="stab" data-s="Дизайн">Дизайн</div>
+    <div class="stab" data-s="Өндіріс">Өндіріс</div>
+    <div class="stab" data-s="Дайын">Дайын</div>
+    <div class="stab" data-s="Жеткізілді">Жеткізілді</div>
+  </div>
+  <div class="content" id="ordersList">
+    <div class="loading"><div class="spin"></div>Жүктелуде...</div>
+  </div>
+</div>
+
+<!-- CLIENTS VIEW -->
+<div id="view-clients" style="display:none">
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="clientSearch" placeholder="🔍 Клиент іздеу...">
+  </div>
+  <div class="content" id="clientsList">
+    <div class="loading"><div class="spin"></div>Жүктелуде...</div>
+  </div>
+</div>
+
+<!-- STATS VIEW (director only) -->
+<div id="view-stats" style="display:none">
+  <div class="content">
+    <div class="sec-title">Жалпы көрсеткіштер</div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="sec-title">💰 Қаржы</div>
+    <div class="finance-card" id="financeBlock"></div>
+    <div class="sec-title">📊 Статус бойынша</div>
+    <div class="finance-card" id="statusStats"></div>
+  </div>
+</div>
+
+<!-- WORKERS VIEW (director only) -->
+<div id="view-workers" style="display:none">
+  <div class="content" id="workersList">
+    <div class="loading"><div class="spin"></div>Жүктелуде...</div>
+  </div>
+</div>
+
+<button class="fab" id="fabBtn">+</button>
+
+</div><!-- /app -->
+
+<!-- ADD ORDER MODAL -->
+<div class="modal" id="addModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ Жаңа тапсырыс</div>
+
+    <div class="field">
+      <label>Клиент аты *</label>
+      <input type="text" id="f_name" placeholder="Айгүл Сапарова">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Телефон *</label>
+        <input type="tel" id="f_phone" placeholder="+7 700 000 0000">
+      </div>
+      <div class="field">
+        <label>Мекенжай</label>
+        <input type="text" id="f_address" placeholder="Көше, үй">
+      </div>
+    </div>
+    <div class="field">
+      <label>Мебель түрі *</label>
+      <input type="text" id="f_furniture" placeholder="Ас үй, шкаф, диван...">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Өлшемі</label>
+        <input type="text" id="f_dim" placeholder="2.5×0.6×0.9 м">
+      </div>
+      <div class="field">
+        <label>Материал</label>
+        <input type="text" id="f_material" placeholder="МДФ, массив...">
+      </div>
+    </div>
+    <div class="row2 director-only">
+      <div class="field">
+        <label>Баға (₸)</label>
+        <input type="number" id="f_price" placeholder="350000">
+      </div>
+      <div class="field">
+        <label>Аванс (₸)</label>
+        <input type="number" id="f_advance" placeholder="150000">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Мерзім</label>
+        <input type="date" id="f_deadline">
+      </div>
+      <div class="field">
+        <label>Жұмысшы</label>
+        <select id="f_worker">
+          <option value="">Таңдаңыз</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ескертпе</label>
+      <textarea id="f_notes" placeholder="Қосымша ақпарат..."></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="saveOrderBtn">💾 Сақтау</button>
+    <button class="btn btn-glass" onclick="closeModal('addModal')">Болдырмау</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal" id="detailModal">
+  <div class="modal-box" id="detailBox"></div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Өзгерту</div>
+
+    <input type="hidden" id="e_id">
+    <div class="field">
+      <label>Клиент аты</label>
+      <input type="text" id="e_name">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Телефон</label>
+        <input type="tel" id="e_phone">
+      </div>
+      <div class="field">
+        <label>Мекенжай</label>
+        <input type="text" id="e_address">
+      </div>
+    </div>
+    <div class="field">
+      <label>Мебель түрі</label>
+      <input type="text" id="e_furniture">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Өлшемі</label>
+        <input type="text" id="e_dim">
+      </div>
+      <div class="field">
+        <label>Материал</label>
+        <input type="text" id="e_material">
+      </div>
+    </div>
+    <div class="row2 director-only">
+      <div class="field">
+        <label>Баға (₸)</label>
+        <input type="number" id="e_price">
+      </div>
+      <div class="field">
+        <label>Аванс (₸)</label>
+        <input type="number" id="e_advance">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Мерзім</label>
+        <input type="date" id="e_deadline">
+      </div>
+      <div class="field">
+        <label>Жұмысшы</label>
+        <select id="e_worker">
+          <option value="">Таңдаңыз</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ескертпе</label>
+      <textarea id="e_notes"></textarea>
+    </div>
+
+    <button class="btn btn-primary" id="saveEditBtn">💾 Сақтау</button>
+    <button class="btn btn-glass" onclick="closeModal('editModal')">Болдырмау</button>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div class="modal" id="pdfModal">
+  <div class="modal-box" id="pdfBox"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const SUPABASE_URL = 'https://udaijfkqxrafadhxktzl.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkYWlqZmtxeHJhZmFkaHhrdHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MTk5MzAsImV4cCI6MjA5NDI5NTkzMH0.MFMk4IJRbv7bGFwK6uYkj19b0v1rDS4h8VcBvrBZGQA';
+
+// РӨЛДЕР — Суpabase-те team_members кестесінде сақталады
+// access_code — кіру коды, role — 'director' немесе 'worker'
+// Директор БАРЛЫҒЫН көреді, жұмысшы тек өзінің тапсырыстарын
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#0a0a0f');
+  tg.setBackgroundColor('#0a0a0f');
+}
+
+// STATE
+let orders = [];
+let clients = [];
+let workers = [];
+let currentUser = null;
+let currentView = 'orders';
+let currentStatus = 'all';
+let currentSearch = '';
+const STATUSES = ['Жаңа','Өлшеу','Дизайн','Өндіріс','Монтаж','Дайын','Жеткізілді','Бас тартылды'];
+const STATUS_BADGE = {
+  'Жаңа':'b-kabyl','Өлшеу':'b-measure','Дизайн':'b-design',
+  'Өндіріс':'b-prod','Монтаж':'b-prod','Дайын':'b-done',
+  'Жеткізілді':'b-deliver','Бас тартылды':'b-cancel'
+};
+const STATUS_EMOJI = {
+  'Жаңа':'🆕','Өлшеу':'📐','Дизайн':'🎨','Өндіріс':'🔨',
+  'Монтаж':'🔧','Дайын':'✅','Жеткізілді':'🚚','Бас тартылды':'❌'
+};
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+async function initAuth() {
+  // Check localStorage for saved user
+  const saved = localStorage.getItem('crm_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showApp();
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+async function doLogin() {
+  const code = document.getElementById('loginCode').value.trim();
+  if (!code) { showToast('⚠ Кодты енгізіңіз'); return; }
+
+  const { data, error } = await sb
+    .from('team_members')
+    .select('*')
+    .eq('access_code', code)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (error || !data) {
+    showToast('❌ Код дұрыс емес');
+    return;
+  }
+
+  currentUser = data;
+  localStorage.setItem('crm_user', JSON.stringify(data));
+  document.getElementById('loginScreen').style.display = 'none';
+  showApp();
+}
+
+function doLogout() {
+  if (!confirm('Шыққыңыз келе ме?')) return;
+  localStorage.removeItem('crm_user');
+  location.reload();
+}
+
+function showApp() {
+  document.getElementById('app').style.display = 'block';
+
+  const isDir = currentUser.role === 'director';
+
+  // Role badge
+  const badge = document.getElementById('roleBadge');
+  badge.textContent = isDir ? '👑 Директор' : '👷 ' + currentUser.name;
+  badge.className = 'role-badge ' + (isDir ? 'role-director' : 'role-worker');
+
+  // Show director-only elements
+  if (isDir) {
+    document.querySelectorAll('.director-only').forEach(el => {
+      el.style.display = el.classList.contains('tab') ? 'block' : 'flex';
+    });
+    document.getElementById('notifBtn').style.display = 'flex';
+  }
+
+  loadAll();
+}
+
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+async function loadAll() {
+  await loadWorkers();
+  await loadOrders();
+  await loadClients();
+}
+
+async function loadOrders() {
+  let q = sb.from('orders').select('*, clients(name,phone,address)').order('created_at', { ascending: false });
+
+  // Worker sees only their orders
+  if (currentUser.role === 'worker') {
+    q = q.eq('worker', currentUser.name);
+  }
+
+  const { data, error } = await q;
+  if (error) { showToast('Қате: ' + error.message); return; }
+  orders = data || [];
+  renderOrders();
+  renderStats();
+}
+
+async function loadClients() {
+  const { data } = await sb.from('clients').select('*, orders(count)').order('created_at', { ascending: false });
+  clients = data || [];
+  renderClients();
+}
+
+async function loadWorkers() {
+  const { data } = await sb.from('team_members').select('*').eq('active', true);
+  workers = data || [];
+  // Populate worker selects
+  ['f_worker','e_worker'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Таңдаңыз</option>';
+    workers.filter(w => w.role === 'worker').forEach(w => {
+      sel.innerHTML += `<option value="${w.name}">${w.name}</option>`;
+    });
+  });
+}
+
+// ═══════════════════════════════════════
+// RENDER ORDERS
+// ═══════════════════════════════════════
+function renderOrders() {
+  const list = document.getElementById('ordersList');
+  let filtered = [...orders];
+
+  if (currentStatus !== 'all') {
+    filtered = filtered.filter(o => o.status === currentStatus);
+  }
+
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    filtered = filtered.filter(o =>
+      (o.clients?.name||'').toLowerCase().includes(q) ||
+      (o.clients?.phone||'').includes(q) ||
+      (o.furniture_type||'').toLowerCase().includes(q) ||
+      (o.worker||'').toLowerCase().includes(q)
+    );
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">🪑</div><div class="empty-text">Тапсырыс жоқ</div></div>`;
+    return;
+  }
+
+  const isDir = currentUser.role === 'director';
+
+  list.innerHTML = filtered.map(o => {
+    const days = daysUntil(o.deadline);
+    const urgent = days !== null && days <= 3 && !['Жеткізілді','Бас тартылды'].includes(o.status);
+    const deadText = o.deadline
+      ? (days < 0 ? `⚠️ ${Math.abs(days)} күн кешікті` : days === 0 ? '⚡ Бүгін' : `📅 ${fmtDate(o.deadline)}`)
+      : '—';
+
+    const priceHtml = isDir
+      ? `<div class="card-price">${fmt(o.price)}</div>`
+      : `<div class="card-price" style="color:var(--text-2);font-size:14px">${o.furniture_type}</div>`;
+
+    return `<div class="order-card" onclick="openDetail(${o.id})">
+      <div class="card-top">
+        <div>
+          <div class="card-client-name">${o.clients?.name || '—'}</div>
+          <div class="card-phone">${o.clients?.phone || ''}</div>
+        </div>
+        <div class="badge ${STATUS_BADGE[o.status]||'b-kabyl'}">${STATUS_EMOJI[o.status]||''} ${o.status}</div>
+      </div>
+      <div class="card-furniture">${o.furniture_type || ''}${o.dimensions ? ' · ' + o.dimensions : ''}</div>
+      <div class="card-footer">
+        ${priceHtml}
+        <div class="card-deadline ${urgent?'urgent':''}">${deadText}</div>
+      </div>
+      ${o.worker ? `<div class="card-worker">👷 ${o.worker}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// RENDER CLIENTS
+// ═══════════════════════════════════════
+function renderClients() {
+  const list = document.getElementById('clientsList');
+  const q = document.getElementById('clientSearch')?.value.toLowerCase() || '';
+  let filtered = clients;
+  if (q) filtered = clients.filter(c => c.name.toLowerCase().includes(q) || (c.phone||'').includes(q));
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Клиент жоқ</div></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const initials = c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="client-card" onclick="callClient('${c.phone}')">
+      <div class="client-avatar">${initials}</div>
+      <div class="client-info">
+        <div class="client-name">${c.name}</div>
+        <div class="client-phone">${c.phone||'—'} ${c.address ? '· ' + c.address : ''}</div>
+      </div>
+      <div class="client-orders-badge">${c.orders?.[0]?.count||0}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// RENDER STATS (director only)
+// ═══════════════════════════════════════
+function renderStats() {
+  if (!document.getElementById('statsGrid')) return;
+
+  const total   = orders.length;
+  const active  = orders.filter(o => !['Жеткізілді','Бас тартылды'].includes(o.status)).length;
+  const done    = orders.filter(o => o.status === 'Дайын').length;
+  const deliver = orders.filter(o => o.status === 'Жеткізілді').length;
+  const totalP  = orders.reduce((s,o) => s + Number(o.price||0), 0);
+  const totalA  = orders.reduce((s,o) => s + Number(o.advance||0), 0);
+  const totalR  = totalP - totalA;
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Барлығы</div><div class="stat-val blue">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Белсенді</div><div class="stat-val orange">${active}</div></div>
+    <div class="stat-card"><div class="stat-label">Аяқталды</div><div class="stat-val green">${deliver}</div></div>
+  `;
+
+  document.getElementById('financeBlock').innerHTML = `
+    <div class="fin-row"><div class="fin-label">Жалпы сомасы</div><div class="fin-val yellow">${fmt(totalP)}</div></div>
+    <div class="fin-row"><div class="fin-label">Алынды (аванс)</div><div class="fin-val green">${fmt(totalA)}</div></div>
+    <div class="fin-row"><div class="fin-label">Қалды</div><div class="fin-val orange">${fmt(totalR)}</div></div>
+    <div class="fin-row"><div class="fin-label">Клиенттер</div><div class="fin-val">${clients.length}</div></div>
+  `;
+
+  document.getElementById('statusStats').innerHTML = STATUSES.map(s => {
+    const cnt = orders.filter(o => o.status === s).length;
+    return `<div class="fin-row"><div class="fin-label">${STATUS_EMOJI[s]} ${s}</div><div class="fin-val">${cnt}</div></div>`;
+  }).join('');
+
+  // Render workers
+  renderWorkers();
+}
+
+function renderWorkers() {
+  const list = document.getElementById('workersList');
+  if (!list) return;
+
+  if (!workers.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">Жұмысшылар жоқ</div></div>';
+    return;
+  }
+
+  list.innerHTML = `
+    <div class="sec-title">Команда мүшелері</div>
+    ${workers.map(w => {
+      const wOrders = orders.filter(o => o.worker === w.name);
+      const wActive = wOrders.filter(o => !['Жеткізілді','Бас тартылды'].includes(o.status)).length;
+      const initials = w.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+      const colors = ['#0A84FF','#30D158','#FF9F0A','#BF5AF2','#FF453A','#5AC8FA'];
+      const color = colors[w.id % colors.length];
+      const roleName = w.role === 'director' ? '👑 Директор' : '👷 Жұмысшы';
+      return `<div class="worker-card">
+        <div class="worker-avatar" style="background:linear-gradient(135deg,${color},${color}88)">${initials}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px">${w.name}</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:2px">${roleName}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:800;color:var(--accent)">${wActive}</div>
+          <div style="font-size:11px;color:var(--text-3)">белсенді</div>
+        </div>
+      </div>`;
+    }).join('')}
+
+    <div class="sec-title" style="margin-top:24px">Жұмысшы қосу</div>
+    <div class="finance-card">
+      <div class="field" style="margin-bottom:10px">
+        <label>Аты</label>
+        <input type="text" id="nw_name" class="search-input" style="margin-top:4px" placeholder="Серік Мамбетов">
+      </div>
+      <div class="row2" style="gap:10px">
+        <div class="field">
+          <label>Кіру коды</label>
+          <input type="text" id="nw_code" class="search-input" style="margin-top:4px" placeholder="1234">
+        </div>
+        <div class="field">
+          <label>Рөл</label>
+          <select id="nw_role" class="search-input" style="margin-top:4px">
+            <option value="worker">Жұмысшы</option>
+            <option value="director">Директор</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-green" onclick="addWorker()" style="margin-top:8px">➕ Жұмысшы қосу</button>
+    </div>
+  `;
+}
+
+async function addWorker() {
+  const name = document.getElementById('nw_name').value.trim();
+  const code = document.getElementById('nw_code').value.trim();
+  const role = document.getElementById('nw_role').value;
+
+  if (!name || !code) { showToast('⚠ Ат пен кодты толтырыңыз'); return; }
+
+  const { error } = await sb.from('team_members').insert({ name, access_code: code, role, active: true });
+  if (error) { showToast('Қате: ' + error.message); return; }
+  showToast('✅ Жұмысшы қосылды');
+  document.getElementById('nw_name').value = '';
+  document.getElementById('nw_code').value = '';
+  await loadWorkers();
+  renderWorkers();
+}
+
+// ═══════════════════════════════════════
+// DETAIL
+// ═══════════════════════════════════════
+function openDetail(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const isDir = currentUser.role === 'director';
+
+  const notifMsg = getNotifMsg(o.status, o.clients?.name, o.furniture_type);
+
+  document.getElementById('detailBox').innerHTML = `
+    <div class="modal-handle"></div>
+    <div class="modal-title">${o.clients?.name || 'Тапсырыс'}</div>
+
+    <div class="detail-block">
+      <div class="d-row"><div class="d-label">Телефон</div><div class="d-val">${o.clients?.phone||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Мекенжай</div><div class="d-val">${o.clients?.address||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Мебель</div><div class="d-val">${o.furniture_type||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Өлшемі</div><div class="d-val">${o.dimensions||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Материал</div><div class="d-val">${o.material||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Жұмысшы</div><div class="d-val">${o.worker||'—'}</div></div>
+      <div class="d-row"><div class="d-label">Мерзім</div><div class="d-val">${fmtDate(o.deadline)}</div></div>
+    </div>
+
+    ${isDir ? `
+    <div class="detail-block">
+      <div class="d-row"><div class="d-label">Жалпы баға</div><div class="d-val blue">${fmt(o.price)}</div></div>
+      <div class="d-row"><div class="d-label">Аванс алынды</div><div class="d-val green">${fmt(o.advance)}</div></div>
+      <div class="d-row"><div class="d-label">Қалдық</div><div class="d-val orange">${fmt((o.price||0)-(o.advance||0))}</div></div>
+    </div>` : ''}
+
+    ${o.notes ? `<div class="detail-block"><div style="font-size:13px;color:var(--text-2);line-height:1.6">${o.notes}</div></div>` : ''}
+
+    <div class="sec-title">Статусты өзгерту</div>
+    <div class="status-grid">
+      ${STATUSES.map(s => `<div class="s-opt ${s===o.status?'active':''}" onclick="updateStatus(${o.id},'${s}')">${STATUS_EMOJI[s]} ${s}</div>`).join('')}
+    </div>
+
+    <div class="sec-title">📱 Клиентке хабарлама</div>
+    <div class="notify-label">WhatsApp/SMS-ке жіберу үшін:</div>
+    <div class="notify-msg" id="notifText-${o.id}">${notifMsg}</div>
+    <button class="btn btn-glass" onclick="copyNotif(${o.id})">📋 Хабарламаны көшіру</button>
+
+    ${isDir ? `
+    <button class="btn btn-purple" onclick="openPdf(${o.id})" style="margin-top:6px">📄 PDF баға ұсынысы</button>
+    <button class="btn btn-primary" onclick="openEdit(${o.id})" style="margin-top:6px">✏️ Өзгерту</button>
+    <button class="btn btn-red" onclick="deleteOrder(${o.id})" style="margin-top:6px">🗑 Жою</button>
+    ` : `
+    <button class="btn btn-primary" onclick="openEdit(${o.id})" style="margin-top:6px">✏️ Ескертпе/Статус өзгерту</button>
+    `}
+
+    <button class="btn btn-glass" onclick="callClient('${o.clients?.phone||''}')">📞 Қоңырау</button>
+    <button class="btn btn-glass" onclick="closeModal('detailModal')">Жабу</button>
+  `;
+
+  document.getElementById('detailModal').classList.add('active');
+  tg?.HapticFeedback?.impactOccurred('medium');
+}
+
+// ═══════════════════════════════════════
+// STATUS UPDATE
+// ═══════════════════════════════════════
+async function updateStatus(id, status) {
+  const { error } = await sb.from('orders').update({ status }).eq('id', id);
+  if (error) { showToast('Қате: ' + error.message); return; }
+  showToast(STATUS_EMOJI[status] + ' ' + status);
+  tg?.HapticFeedback?.notificationOccurred('success');
+  await loadOrders();
+  openDetail(id);
+}
+
+// ═══════════════════════════════════════
+// EDIT
+// ═══════════════════════════════════════
+function openEdit(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const isDir = currentUser.role === 'director';
+
+  document.getElementById('e_id').value = o.id;
+  document.getElementById('e_name').value = o.clients?.name || '';
+  document.getElementById('e_phone').value = o.clients?.phone || '';
+  document.getElementById('e_address').value = o.clients?.address || '';
+  document.getElementById('e_furniture').value = o.furniture_type || '';
+  document.getElementById('e_dim').value = o.dimensions || '';
+  document.getElementById('e_material').value = o.material || '';
+  document.getElementById('e_notes').value = o.notes || '';
+  document.getElementById('e_deadline').value = o.deadline || '';
+  document.getElementById('e_worker').value = o.worker || '';
+
+  if (isDir) {
+    document.getElementById('e_price').value = o.price || '';
+    document.getElementById('e_advance').value = o.advance || '';
+  }
+
+  closeModal('detailModal');
+  document.getElementById('editModal').classList.add('active');
+}
+
+document.getElementById('saveEditBtn').addEventListener('click', async () => {
+  const id = document.getElementById('e_id').value;
+  const isDir = currentUser.role === 'director';
+
+  // Update client
+  const o = orders.find(x => x.id == id);
+  if (!o) return;
+
+  await sb.from('clients').update({
+    name: document.getElementById('e_name').value.trim(),
+    phone: document.getElementById('e_phone').value.trim(),
+    address: document.getElementById('e_address').value.trim() || null
+  }).eq('id', o.client_id);
+
+  const updateData = {
+    furniture_type: document.getElementById('e_furniture').value.trim(),
+    dimensions: document.getElementById('e_dim').value.trim() || null,
+    material: document.getElementById('e_material').value.trim() || null,
+    notes: document.getElementById('e_notes').value.trim() || null,
+    deadline: document.getElementById('e_deadline').value || null,
+    worker: document.getElementById('e_worker').value || null,
+  };
+
+  if (isDir) {
+    updateData.price = Number(document.getElementById('e_price').value) || 0;
+    updateData.advance = Number(document.getElementById('e_advance').value) || 0;
+  }
+
+  const { error } = await sb.from('orders').update(updateData).eq('id', id);
+  if (error) { showToast('Қате: ' + error.message); return; }
+
+  showToast('✅ Өзгертулер сақталды');
+  closeModal('editModal');
+  await loadOrders();
+  await loadClients();
+});
+
+// ═══════════════════════════════════════
+// NOTIFICATION MESSAGES
+// ═══════════════════════════════════════
+function getNotifMsg(status, clientName, furniture) {
+  const name = clientName || 'Клиент';
+  const msgs = {
+    'Жаңа':       `Сәлеметсіз бе, ${name}!\n\nСіздің тапсырысыңыз қабылданды.\nМебель: ${furniture}\n\nБіз жұмысқа кірісеміз. Сұрақтар болса хабарласыңыз! 🪑`,
+    'Өлшеу':      `Сәлеметсіз бе, ${name}!\n\nМастер өлшеу жасауға келеді. Ыңғайлы уақытты белгілейік.\n\nБізбен хабарласыңыз! 📐`,
+    'Дизайн':     `Сәлеметсіз бе, ${name}!\n\nСіздің мебеліңіздің дизайны дайындалып жатыр.\nКүтіңіз, жаксы болады! 🎨`,
+    'Өндіріс':    `Сәлеметсіз бе, ${name}!\n\n${furniture} кесіліп, құралып жатыр.\nБарлығы жоспарда! 🔨`,
+    'Монтаж':     `Сәлеметсіз бе, ${name}!\n\nМебеліңіз монтажға дайын.\nМастер жақын арада сізге хабарласады! 🔧`,
+    'Дайын':      `Сәлеметсіз бе, ${name}!\n\n✅ ${furniture} ДАЙЫН!\n\nАлуға немесе жеткізуге дайынбыз.\nБізбен хабарласыңыз! 🎉`,
+    'Жеткізілді': `Сәлеметсіз бе, ${name}!\n\nМебеліңіз жеткізілді. Рахмет!\n\nРецензия қалдырсаңыз өте қуанышты болар едік! ⭐`,
+    'Бас тартылды': `Сәлеметсіз бе, ${name}!\n\nӨкінішке орай тапсырысыңыз бойынша байланысу қажет.\n\nБізбен хабарласыңыз. 📞`
+  };
+  return msgs[status] || msgs['Жаңа'];
+}
+
+function copyNotif(id) {
+  const el = document.getElementById('notifText-' + id);
+  if (!el) return;
+  const text = el.textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Хабарлама көшірілді'));
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 Хабарлама көшірілді');
+  }
+}
+
+// ═══════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════
+function openPdf(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const remaining = (o.price||0) - (o.advance||0);
+  const now = new Date().toLocaleDateString('kk-KZ');
+
+  document.getElementById('pdfBox').innerHTML = `
+    <div class="modal-handle"></div>
+    <div class="modal-title">📄 Баға ұсынысы</div>
+
+    <div class="pdf-preview">
+      <div class="pdf-logo">🪑 Мебель CRM</div>
+      <div style="font-size:11px;color:#666;margin-bottom:12px">Дата: ${now}</div>
+      <div class="pdf-title">БАҒА ҰСЫНЫСЫ (ЦЕНОВОЕ ПРЕДЛОЖЕНИЕ)</div>
+      <div class="pdf-row"><span>Клиент:</span><span style="font-weight:700">${o.clients?.name||'—'}</span></div>
+      <div class="pdf-row"><span>Телефон:</span><span>${o.clients?.phone||'—'}</span></div>
+      <div class="pdf-row"><span>Мекенжай:</span><span>${o.clients?.address||'—'}</span></div>
+      <div class="pdf-row"><span>Мебель түрі:</span><span style="font-weight:700">${o.furniture_type||'—'}</span></div>
+      <div class="pdf-row"><span>Өлшемі:</span><span>${o.dimensions||'—'}</span></div>
+      <div class="pdf-row"><span>Материал:</span><span>${o.material||'—'}</span></div>
+      <div class="pdf-row"><span>Мерзім:</span><span>${fmtDate(o.deadline)}</span></div>
+      ${o.notes ? `<div class="pdf-row"><span>Ескертпе:</span><span>${o.notes}</span></div>` : ''}
+      <div style="margin-top:14px;padding-top:12px;border-top:2px solid #0A84FF">
+        <div class="pdf-row"><span>Жалпы сомасы:</span><span style="font-weight:700;color:#1a1a1a">${fmt(o.price)}</span></div>
+        <div class="pdf-row"><span>Аванс алынды:</span><span style="color:#30D158;font-weight:700">${fmt(o.advance)}</span></div>
+        <div class="pdf-row"><span>Қалдық сома:</span><span style="color:#FF9F0A;font-weight:700">${fmt(remaining)}</span></div>
+      </div>
+      <div class="pdf-total">✅ Келісілді: ${fmt(o.price)}</div>
+      <div style="font-size:10px;color:#999;margin-top:12px">Бұл баға ұсынысы ресми құжат ретінде пайдаланылады.</div>
+    </div>
+
+    <button class="btn btn-primary" onclick="downloadPdf(${id})">⬇️ PDF жүктеу</button>
+    <button class="btn btn-green" onclick="sharePdf(${id})">📤 Жіберу</button>
+    <button class="btn btn-glass" onclick="closeModal('pdfModal')">Жабу</button>
+  `;
+
+  document.getElementById('pdfModal').classList.add('active');
+}
+
+async function downloadPdf(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    doc.setFont('helvetica');
+    doc.setFontSize(20);
+    doc.setTextColor(10, 132, 255);
+    doc.text('Мебель CRM Pro', 20, 25);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Дата: ' + new Date().toLocaleDateString(), 20, 33);
+
+    doc.setFontSize(14);
+    doc.setTextColor(30, 30, 30);
+    doc.text('ЦЕНОВОЕ ПРЕДЛОЖЕНИЕ / БАҒА ҰСЫНЫСЫ', 20, 46);
+
+    doc.setDrawColor(10, 132, 255);
+    doc.setLineWidth(0.5);
+    doc.line(20, 49, 190, 49);
+
+    const rows = [
+      ['Клиент', o.clients?.name || '—'],
+      ['Телефон', o.clients?.phone || '—'],
+      ['Мекенжай', o.clients?.address || '—'],
+      ['Мебель түрі', o.furniture_type || '—'],
+      ['Өлшемі', o.dimensions || '—'],
+      ['Материал', o.material || '—'],
+      ['Мерзім', fmtDate(o.deadline)],
+    ];
+
+    if (o.notes) rows.push(['Ескертпе', o.notes]);
+
+    doc.setFontSize(11);
+    let y = 58;
+    rows.forEach(([label, val]) => {
+      doc.setTextColor(120, 120, 120);
+      doc.text(label + ':', 20, y);
+      doc.setTextColor(30, 30, 30);
+      doc.text(String(val), 70, y);
+      y += 9;
+    });
+
+    y += 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, 190, y);
+    y += 10;
+
+    doc.setFontSize(13);
+    doc.setTextColor(30, 30, 30);
+    doc.text('Жалпы сомасы:', 20, y);
+    doc.setTextColor(10, 132, 255);
+    doc.text(fmt(o.price), 100, y);
+    y += 10;
+
+    doc.setTextColor(30, 30, 30);
+    doc.text('Аванс алынды:', 20, y);
+    doc.setTextColor(48, 209, 88);
+    doc.text(fmt(o.advance), 100, y);
+    y += 10;
+
+    doc.setTextColor(30, 30, 30);
+    doc.text('Қалдық сома:', 20, y);
+    doc.setTextColor(255, 159, 10);
+    doc.text(fmt((o.price||0)-(o.advance||0)), 100, y);
+
+    doc.save(`baga-usynys-${o.clients?.name||'client'}.pdf`);
+    showToast('✅ PDF жүктелді');
+  } catch(e) {
+    showToast('PDF жасау қатесі: ' + e.message);
+  }
+}
+
+function sharePdf(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const remaining = (o.price||0)-(o.advance||0);
+  const text = `📋 БАҒА ҰСЫНЫСЫ\n\nКлиент: ${o.clients?.name}\nМебель: ${o.furniture_type}\nӨлшемі: ${o.dimensions||'—'}\nМатериал: ${o.material||'—'}\nМерзім: ${fmtDate(o.deadline)}\n\n💰 Жалпы: ${fmt(o.price)}\n✅ Аванс: ${fmt(o.advance)}\n⏳ Қалдық: ${fmt(remaining)}\n\nСізбен жұмыс істегеніміз қуаныш! 🪑`;
+
+  if (navigator.share) {
+    navigator.share({ title: 'Баға ұсынысы', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Баға ұсынысы көшірілді'));
+  }
+}
+
+// ═══════════════════════════════════════
+// SAVE ORDER
+// ═══════════════════════════════════════
+async function saveOrder() {
+  const name = document.getElementById('f_name').value.trim();
+  const phone = document.getElementById('f_phone').value.trim();
+  const furniture = document.getElementById('f_furniture').value.trim();
+
+  if (!name || !phone || !furniture) {
+    showToast('⚠ Аты, телефон, мебель түрін толтырыңыз');
+    return;
+  }
+
+  const btn = document.getElementById('saveOrderBtn');
+  btn.textContent = 'Сақталуда...';
+  btn.disabled = true;
+
+  let { data: existing } = await sb.from('clients').select('id').eq('phone', phone).maybeSingle();
+  let clientId;
+
+  if (existing) {
+    clientId = existing.id;
+  } else {
+    const { data: newC, error: cE } = await sb.from('clients').insert({
+      name, phone,
+      address: document.getElementById('f_address').value.trim() || null
+    }).select('id').single();
+    if (cE) { showToast('Қате: ' + cE.message); btn.textContent='💾 Сақтау'; btn.disabled=false; return; }
+    clientId = newC.id;
+  }
+
+  const isDir = currentUser.role === 'director';
+  const orderData = {
+    client_id: clientId,
+    furniture_type: furniture,
+    dimensions: document.getElementById('f_dim').value.trim() || null,
+    material: document.getElementById('f_material').value.trim() || null,
+    notes: document.getElementById('f_notes').value.trim() || null,
+    deadline: document.getElementById('f_deadline').value || null,
+    worker: document.getElementById('f_worker').value || null,
+    status: 'Жаңа',
+    price: isDir ? (Number(document.getElementById('f_price').value)||0) : 0,
+    advance: isDir ? (Number(document.getElementById('f_advance').value)||0) : 0,
+  };
+
+  const { error } = await sb.from('orders').insert(orderData);
+  btn.textContent = '💾 Сақтау';
+  btn.disabled = false;
+
+  if (error) { showToast('Қате: ' + error.message); return; }
+
+  showToast('✅ Тапсырыс сақталды');
+  closeModal('addModal');
+  clearAddForm();
+  tg?.HapticFeedback?.notificationOccurred('success');
+  await loadOrders();
+  await loadClients();
+}
+
+function clearAddForm() {
+  ['f_name','f_phone','f_address','f_furniture','f_dim','f_material','f_price','f_advance','f_deadline','f_notes','f_worker'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function deleteOrder(id) {
+  if (!confirm('Тапсырысты жоюды растаңыз')) return;
+  const { error } = await sb.from('orders').delete().eq('id', id);
+  if (error) { showToast('Қате: ' + error.message); return; }
+  showToast('🗑 Жойылды');
+  closeModal('detailModal');
+  await loadOrders();
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function fmt(n) {
+  return new Intl.NumberFormat('kk-KZ').format(n||0) + ' ₸';
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('kk-KZ', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function daysUntil(d) {
+  if (!d) return null;
+  return Math.ceil((new Date(d) - new Date()) / (1000*60*60*24));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function callClient(phone) {
+  if (phone) window.open('tel:' + phone);
+}
+
+// ═══════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════
+document.getElementById('mainTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  document.querySelectorAll('#mainTabs .tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  currentView = tab.dataset.view;
+
+  ['orders','clients','stats','workers'].forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) el.style.display = v === currentView ? 'block' : 'none';
+  });
+
+  if (currentView === 'stats') renderStats();
+  if (currentView === 'workers') renderWorkers();
+  tg?.HapticFeedback?.selectionChanged();
+});
+
+document.getElementById('statusFilter').addEventListener('click', e => {
+  const stab = e.target.closest('.stab');
+  if (!stab) return;
+  document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  stab.classList.add('active');
+  currentStatus = stab.dataset.s;
+  renderOrders();
+});
+
+document.getElementById('orderSearch').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  renderOrders();
+});
+
+document.getElementById('clientSearch')?.addEventListener('input', renderClients);
+
+document.getElementById('fabBtn').addEventListener('click', () => {
+  document.getElementById('addModal').classList.add('active');
+  tg?.HapticFeedback?.impactOccurred('medium');
+});
+
+document.getElementById('saveOrderBtn').addEventListener('click', saveOrder);
+
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+
+// LOGIN: Enter key
+document.getElementById('loginCode')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// INIT
+initAuth();
+</script>
+</body>
+</html>
